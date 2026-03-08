@@ -26,7 +26,7 @@ const NodeCreation = () => {
     try {
       setFetchingData(true);
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/v1/tank-sensorparameters?page=${page}&size=${size}&sort_by=id&sort_order=asc`,
+        `http://127.0.0.1:8000/tank-parameters?page=${page}&size=${size}&sort_by=id&sort_order=asc`,
         {
           headers: {
             'accept': 'application/json'
@@ -34,7 +34,7 @@ const NodeCreation = () => {
         }
       );
       
-      setExistingNodes(response.data.data || []);
+      setExistingNodes(response.data || []);
       setPagination({
         total: response.data.total || 0,
         page: response.data.page || 1,
@@ -67,7 +67,7 @@ const NodeCreation = () => {
 
     try {
       const response = await axios.post(
-        'http://127.0.0.1:8000/api/v1/tank-sensorparameters',
+        'http://127.0.0.1:8000/tank-parameters',
         formData,
         {
           headers: {
@@ -79,7 +79,8 @@ const NodeCreation = () => {
 
       setMessage({
         type: 'success',
-        content: 'Node created successfully!'
+        content: 'Node created successfully!',
+        details: response.data
       });
 
       // Reset form
