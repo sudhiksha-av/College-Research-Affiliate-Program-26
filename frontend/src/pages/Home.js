@@ -23,8 +23,7 @@ const Home = () => {
   const getActualTankId = (nodeId) => {
     const mapping = {
       'Node 1': 'NODE_001',
-      'Node 2': 'NODE_002', // Add if needed
-      'string': '1', // Maps to ID "1" in sensor data
+      'Node 2': 'NODE_002', 
       'NODE_001': 'NODE_001' // Direct mapping
     };
     return mapping[nodeId] || nodeId;
@@ -211,10 +210,7 @@ const Home = () => {
       console.error('Error fetching nodes:', error);
       // If API fails, create some sample nodes based on your data
       const sampleNodes = [
-        { id: 'Node 1', name: 'Node 1', tank_height: 22, tank_length: 22, tank_width: 0.2 },
-        { id: 'Node 2', name: 'Node 2', tank_height: 0.4, tank_length: 0.4, tank_width: 0.5 },
-        { id: 'string', name: 'string', tank_height: 0, tank_length: 0, tank_width: 0 },
-        { id: 'NODE_001', name: 'Tank 001', tank_height: 200, tank_length: 100, tank_width: 100 }
+        { id: '', name: 'Tank 001' }
       ];
       setNodes(sampleNodes);
       if (!selectedNode) {
