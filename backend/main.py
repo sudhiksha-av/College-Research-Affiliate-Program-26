@@ -10,7 +10,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
-from tensorflow.keras.models import load_model
 import numpy as np
 
 # Load environment variables from .env file
