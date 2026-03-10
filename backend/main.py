@@ -10,6 +10,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+from tensorflow.keras.models import load_model
+import numpy as np
 
 # Load environment variables from .env file
 load_dotenv()
@@ -74,6 +76,19 @@ def create_tables():
         tank_width_cm FLOAT,
         lat FLOAT,
         long FLOAT
+    )
+    """)
+
+    # Predictions history table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS predictions (
+        id SERIAL PRIMARY KEY,
+        node_id VARCHAR(50),
+        distance FLOAT,
+        temperature FLOAT,
+        prediction VARCHAR(50),
+        confidence FLOAT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
@@ -183,6 +198,11 @@ class TankParameters(BaseModel):
     tank_width_cm: float
     lat: float
     long: float
+
+class PredictionInput(BaseModel):
+    node_id: str
+    distance: float
+    temperature: float
 
 
 # ==============================
@@ -324,6 +344,48 @@ def get_sensor_data(node_id: str = None):
         })
 
     return result
+
+# ==============================
+# PREDICTION API
+# ==============================
+
+@app.post("/api/v1/predict")
+def predict_activity(data: PredictionInput):
+
+    distance = data.distance
+    temperature = data.temperature
+    node_id = data.node_id
+
+    # Simple rule-based prediction
+    if distance < 80:
+        prediction = "shower"
+        confidence = 0.90
+    elif distance < 100:
+        prediction = "faucet"
+        confidence = 0.85
+    else:
+        prediction = "no_activity"
+        confidence = 0.75
+
+    # Save prediction to database
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    INSERT INTO predictions
+    (node_id, distance, temperature, prediction, confidence)
+    VALUES (%s,%s,%s,%s,%s)
+    """,
+                (node_id, distance, temperature, prediction, confidence))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return {
+        "prediction": prediction,
+        "confidence": confidence
+    }
 
 # ==============================
 # START BACKGROUND COLLECTOR
