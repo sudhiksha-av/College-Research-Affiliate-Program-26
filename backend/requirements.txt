@@ -5,4 +5,4 @@ uvicorn
 pydantic
 python-dotenv
 numpy
-tensorflow
+tensorflow==2.21.0

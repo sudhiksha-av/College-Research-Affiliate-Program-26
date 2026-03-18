@@ -354,31 +354,36 @@ def get_sensor_data(node_id: str = None):
 
 @app.post("/api/v1/predict")
 def predict_water_activity(data: dict):
-
     try:
-        distance = data["distance"]
-        temperature = data["temperature"]
-
-        # Prepare input
-        input_data = np.array([[distance, temperature]])
-
-        # Adjust if needed
-        input_data = input_data.reshape(1, 1, 2)
-
-        # Predict
-        prediction = ml_model.predict(input_data)
-
-        predicted_class = classes[np.argmax(prediction)]
-        confidence = float(np.max(prediction))
-
-        # Save to DB
         conn = get_connection()
         cur = conn.cursor()
 
         cur.execute("""
-        INSERT INTO predictions (distance, temperature, prediction, confidence)
-        VALUES (%s, %s, %s, %s)
-        """, (distance, temperature, predicted_class, confidence))
+            SELECT field1, field2 
+            FROM sensor_data 
+            ORDER BY created_at DESC 
+            LIMIT 30
+        """)
+        rows = cur.fetchall()
+        
+        if len(rows) < 30:
+            cur.close()
+            conn.close()
+            return {"error": f"Need 30 data points for prediction. Currently have {len(rows)}."}
+
+        sequence = np.array(rows[::-1]) 
+
+        input_data = sequence.reshape(1, 30, 2).astype('float32')
+
+        prediction = ml_model.predict(input_data)
+        predicted_index = np.argmax(prediction)
+        predicted_class = classes[predicted_index]
+        confidence = float(np.max(prediction))
+
+        cur.execute("""
+            INSERT INTO predictions (distance, temperature, prediction, confidence)
+            VALUES (%s, %s, %s, %s)
+        """, (float(sequence[-1][0]), float(sequence[-1][1]), predicted_class, confidence))
 
         conn.commit()
         cur.close()
@@ -386,7 +391,8 @@ def predict_water_activity(data: dict):
 
         return {
             "prediction": predicted_class,
-            "confidence": confidence
+            "confidence": confidence,
+            "status": "success"
         }
 
     except Exception as e:

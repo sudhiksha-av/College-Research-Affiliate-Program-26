@@ -8,3 +8,8 @@ Training Experiments
 | 4          | Improved GRU     | 3      | 128,64,32    | 0.3     | 0.001         | 20     | 91.0         | 0.84     | Best model                |
 | 5          | CNN              | 2      | 48,24        | 0.2     | 0.001         | 8      | 85.2         | 0.75     | Baseline                  |
 | 6          | Improved CNN     | 2      | 64,128       | 0.3     | 0.001         | 20     | 86.9         | 0.64     | Accuracy ↑, F1 ↓          |
+
+
+During initial experiments, GRU showed the best performance and was selected for deployment. 
+After re-running experiments, CNN showed slightly better accuracy due to randomness in training. 
+However, GRU was retained as it is more suitable for sequential time-series modeling.
