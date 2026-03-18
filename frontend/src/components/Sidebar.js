@@ -55,6 +55,22 @@ const Sidebar = ({ isOpen, onClose }) => {
             </svg>
             Node Creation
           </button>
+          
+          <button
+            className={`sidebar-btn ${location.pathname === '/prediction' ? 'active' : ''}`}
+            onClick={() => handleNavigation('/prediction')}>
+             <svg 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+                >
+                <path d="M12 2v20M2 12h20" />
+             </svg>
+              Prediction
+          </button>
         </nav>
       </div>
     </>

@@ -8,4 +8,9 @@ export default {
   API_BASE_URL,
   SENSOR_DATA_URL: `${API_BASE_URL}/sensor-data`,
   TANK_PARAMETERS_URL: `${API_BASE_URL}/tank-parameters`,
+
+  // NEW APIs
+  PREDICT_URL: `${API_BASE_URL}/api/v1/predict`,
+  MODEL_INFO_URL: `${API_BASE_URL}/api/v1/model-info`,
+  PREDICTIONS_HISTORY_URL: `${API_BASE_URL}/api/v1/predictions-history`,
 };

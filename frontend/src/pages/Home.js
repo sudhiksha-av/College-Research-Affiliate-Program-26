@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
-
+import { PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar } from 'recharts';
 import config from '../config';
+
+const CHART_COLORS = [
+  'var(--primary-color)',
+  'var(--secondary-color)',
+  'var(--accent-color)',
+  '#8884d8',
+  '#82ca9d'
+];
 
 const Home = () => {
   const [waterLevel, setWaterLevel] = useState(0);
@@ -288,6 +297,26 @@ const Home = () => {
     }
   }, [customFromDate, customToDate]);
 
+  const getCurrentActivity = () => {
+  if (!waterLevelData.length) return "No Data";
+
+  const latest = waterLevelData[waterLevelData.length - 1].value;
+
+  if (latest > 80) return "Tank Full";
+  if (latest > 50) return "Normal Usage";
+  if (latest > 20) return "Low Usage";
+  return "Critical Level";
+};
+
+const getDistributionData = () => {
+  return [
+    { name: "High", value: waterLevel > 80 ? 1 : 0 },
+    { name: "Normal", value: waterLevel > 50 && waterLevel <= 80 ? 1 : 0 },
+    { name: "Low", value: waterLevel > 20 && waterLevel <= 50 ? 1 : 0 },
+    { name: "Critical", value: waterLevel <= 20 ? 1 : 0 }
+  ];
+};
+
   return (
     <div className="home-page">
       <div className="page-header">
@@ -410,6 +439,10 @@ const Home = () => {
       )}
 
       {/* Cards Section */}
+      <div className="card" style={{ marginBottom: "20px" }}>
+        <h3>Real-Time Activity</h3>
+        <h2>{getCurrentActivity()}</h2>
+      </div>
       <div className="cards-container">
         <div className="card water-level-card">
           <div className="card-header">
@@ -490,11 +523,12 @@ const Home = () => {
                   ]}
                 />
                 <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#2196F3"
-                  strokeWidth="3"
-                  dot={{ fill: '#2196F3', strokeWidth: 2, r: 4 }}
+                      type="monotone"
+                      dataKey="value"
+                      stroke="var(--primary-color)"
+                      strokeWidth="3"
+                      animationDuration={500}
+                      animationBegin={0}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -530,13 +564,46 @@ const Home = () => {
                 <Line
                   type="monotone"
                   dataKey="value"
-                  stroke="#FF9800"
+                  stroke="var(--accent-color)"
+                  animationDuration={500}
                   strokeWidth="3"
                   dot={{ fill: '#FF9800', strokeWidth: 2, r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           )}
+        </div>
+
+        <div className="graph-card">
+          <h3>Activity Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={getDistributionData()}
+                dataKey="value"
+                outerRadius={100}
+              >
+                {getDistributionData().map((entry, index) => (
+                  <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="graph-card">
+          <h3>Water Level Timeline</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={waterLevelData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="time" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="var(--primary-color)" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

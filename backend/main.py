@@ -11,6 +11,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
+from tensorflow.keras.models import load_model
+import numpy as np
+
+
+# Load GRU model
+ml_model = load_model("saved_models/Improved GRU_model.h5")
+
+# Class labels
+classes = ["no_activity", "shower", "faucet", "toilet", "dishwasher"]
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -76,6 +86,18 @@ def create_tables():
         long FLOAT
     )
     """)
+
+     # Prediction table
+    cur.execute("""
+CREATE TABLE IF NOT EXISTS predictions (
+    id SERIAL PRIMARY KEY,
+    distance FLOAT,
+    temperature FLOAT,
+    prediction VARCHAR(50),
+    confidence FLOAT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+""")
 
     conn.commit()
     cur.close()
@@ -324,6 +346,118 @@ def get_sensor_data(node_id: str = None):
         })
 
     return result
+
+
+# ==============================
+# POST PREDICT API
+# ==============================
+
+@app.post("/api/v1/predict")
+def predict_water_activity(data: dict):
+
+    try:
+        distance = data["distance"]
+        temperature = data["temperature"]
+
+        # Prepare input
+        input_data = np.array([[distance, temperature]])
+
+        # Adjust if needed
+        input_data = input_data.reshape(1, 1, 2)
+
+        # Predict
+        prediction = ml_model.predict(input_data)
+
+        predicted_class = classes[np.argmax(prediction)]
+        confidence = float(np.max(prediction))
+
+        # Save to DB
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+        INSERT INTO predictions (distance, temperature, prediction, confidence)
+        VALUES (%s, %s, %s, %s)
+        """, (distance, temperature, predicted_class, confidence))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {
+            "prediction": predicted_class,
+            "confidence": confidence
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+    
+
+# ==============================
+# GET MODEL-INFO API
+# ==============================
+
+@app.get("/api/v1/model-info")
+def get_model_info():
+
+    return {
+     "model_type": "GRU",
+     "version": "1.0",
+     "accuracy": 0.9103,
+     "last_trained": "2026-03-10",
+     "classes": classes
+    }
+    
+
+# ==============================
+# POST PREDICTIONS-HISTORY API
+# ==============================
+
+@app.get("/api/v1/predictions-history")
+def get_predictions_history(limit: int = 100):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT distance, temperature, prediction, confidence, created_at
+    FROM predictions
+    ORDER BY created_at DESC
+    LIMIT %s
+    """, (limit,))
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return [
+        {
+            "distance": r[0],
+            "temperature": r[1],
+            "prediction": r[2],
+            "confidence": r[3],
+            "time": str(r[4])
+        }
+        for r in rows
+    ]
+
+# ==============================
+# DELETE TANK NODE API
+# ==============================
+
+@app.delete("/api/v1/tank/{node_id}")
+def delete_tank(node_id: str):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("DELETE FROM tank_sensorparameters WHERE node_id = %s", (node_id,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return {"message": f"{node_id} deleted successfully"}
 
 # ==============================
 # START BACKGROUND COLLECTOR

@@ -106,6 +106,23 @@ const NodeCreation = () => {
     }
   };
 
+  const handleDelete = async (nodeId) => {
+  if (!window.confirm("Are you sure you want to delete this node?")) return;
+
+  try {
+    await axios.delete(`${config.API_BASE_URL}/api/v1/tank/${nodeId}`);
+
+    alert("Node deleted successfully");
+
+    // Refresh nodes
+    fetchExistingNodes();
+
+  } catch (error) {
+    console.error(error);
+    alert("Delete failed");
+  }
+};
+
   return (
     <div className="node-creation-page">
       <h2 className="page-title">Node Creation & Management</h2>
@@ -264,6 +281,7 @@ const NodeCreation = () => {
                       <th>Volume (L)</th>
                       <th>Latitude</th>
                       <th>Longitude</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -279,6 +297,22 @@ const NodeCreation = () => {
                         </td>
                         <td className="coordinate">{node.lat}</td>
                         <td className="coordinate">{node.long}</td>
+                        <td>
+                          <button
+                            style={{
+                              backgroundColor: "red",
+                              color: "white",
+                              border: "none",
+                              padding: "5px 10px",
+                              borderRadius: "5px",
+                              cursor: "pointer"
+                            }}
+                            onClick={() => handleDelete(node.node_id)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+
                       </tr>
                     ))}
                   </tbody>

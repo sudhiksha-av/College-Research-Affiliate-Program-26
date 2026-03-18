@@ -1,4 +1,5 @@
 import React from 'react';
+import collegeLogo from '../assets/college-logo.png';
 
 const Navbar = ({ onToggleSidebar }) => {
   return (
@@ -11,7 +12,7 @@ const Navbar = ({ onToggleSidebar }) => {
         </button>
         
         <div className="logo">
-          <img src="https://tse4.mm.bing.net/th/id/OIP.OQ6ucQ9Mfhg3t1WngxT2UgHaEM?pid=Api&P=0&h=180" alt="Logo" className="logo-img" />
+          <img src={collegeLogo} alt="College Logo" className="logo-img" />
         </div>
       </div>
       

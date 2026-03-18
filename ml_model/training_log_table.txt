@@ -1,0 +1,10 @@
+Training Experiments
+
+| Experiment | Model            | Layers | Units        | Dropout | Learning Rate | Epochs | Accuracy (%) | F1 Score | Notes                     |
+|------------|------------------|--------|--------------|---------|---------------|--------|--------------|----------|---------------------------|
+| 1          | LSTM             | 2      | 48,24        | 0.2     | 0.001         | 8      | 83.3         | 0.64     | Baseline                  |
+| 2          | Improved LSTM    | 3      | 128,64,32    | 0.3     | 0.001         | 20     | 83.8         | 0.64     | Slight improvement        |
+| 3          | GRU              | 2      | 48,24        | 0.2     | 0.001         | 8      | 84.8         | 0.61     | Baseline                  |
+| 4          | Improved GRU     | 3      | 128,64,32    | 0.3     | 0.001         | 20     | 91.0         | 0.84     | Best model                |
+| 5          | CNN              | 2      | 48,24        | 0.2     | 0.001         | 8      | 85.2         | 0.75     | Baseline                  |
+| 6          | Improved CNN     | 2      | 64,128       | 0.3     | 0.001         | 20     | 86.9         | 0.64     | Accuracy ↑, F1 ↓          |
